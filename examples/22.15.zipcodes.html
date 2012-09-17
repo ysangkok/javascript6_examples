@@ -39,8 +39,7 @@ function lookupCity(zip, callback) {
     withDB(function(db) {
         // Create a transaction object for this query
         var transaction = db.transaction(["zipcodes"],  // Object stores we need
-                              IDBTransaction.READ_ONLY, // No updates
-                                         0);            // No timeout
+                                           "readonly"); // No updates
 
         // Get the object store from the transaction
         var objects = transaction.objectStore("zipcodes");
@@ -67,8 +66,7 @@ function lookupCity(zip, callback) {
 function lookupZipcodes(city, callback) {
     withDB(function(db) {
         // As above, we create a transaction and get the object store
-        var transaction = db.transaction(["zipcodes"],
-                                         IDBTransaction.READ_ONLY, 0);
+        var transaction = db.transaction(["zipcodes"], "readonly");
         var store = transaction.objectStore("zipcodes");
         // This time we get the city index of the object store
         var index = store.index("cities");
@@ -207,7 +205,7 @@ function initdb(db, f) {
                 // need to tell it that we'll be doing writes to the database,
                 // not just reads:
                 var transaction = db.transaction(["zipcodes"], // object stores
-                                                 IDBTransaction.READ_WRITE);
+                                                               "readwrite");
 
                 // Get our object store from the transaction
                 var store = transaction.objectStore("zipcodes");
@@ -249,6 +247,20 @@ function initdb(db, f) {
         }
     }
 }
+function deleteDB() {
+    try {
+        var dbreq = window.indexedDB.deleteDatabase("zipcodes");
+        dbreq.onsuccess = function (event) {
+            var db = event.result;
+            alert("deleted");
+        }
+        dbreq.onerror = function (event) {
+            logerr(event);
+        }
+    } catch (e) {
+        logerr(e);
+    }
+}
 </script>
 </head>
 <body>
@@ -264,5 +276,6 @@ City: <input onchange="displayZipcodes(this.value)"></input>
 <p><i>This example is only known to work in Firefox 4 and Chrome 11.</i></p>
 <p><i>Your first query may take a very long time to complete.</i></p>
 <p><i>You may need to start Chrome with --unlimited-quota-for-indexeddb</i></p>
+<button onclick="javascript:deleteDB();">Delete DB</button>
 </body>
 </html>
